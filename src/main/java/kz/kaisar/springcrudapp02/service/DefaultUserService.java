@@ -31,10 +31,17 @@ public class DefaultUserService implements UserService{
     @Override
     public UserDto saveUser(UserDto userDto) throws ValidationException {
         validateUserDto(userDto);
-        User savedUser = (User) userRepository.save(userConverter.fromUserDtoToUser(userDto));
+        User savedUser = User.builder()
+                .id(userDto.getId())
+                .email(userDto.getEmail())
+                .login(userDto.getLogin())
+                .name(userDto.getName())
+                .build();
+
+                userRepository.save(savedUser);
+
         return userConverter.fromUserToUserDto(savedUser);
     }
-
 
     @Override
     public void deleteUser(int userId) {
