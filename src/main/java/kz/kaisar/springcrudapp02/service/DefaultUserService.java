@@ -5,10 +5,15 @@ import kz.kaisar.springcrudapp02.entity.User;
 import kz.kaisar.springcrudapp02.exception.ValidationException;
 import kz.kaisar.springcrudapp02.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Objects.isNull;
 
@@ -16,7 +21,9 @@ import static java.util.Objects.isNull;
 @Service
 public class DefaultUserService implements UserService{
 
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final UserConverter userConverter;
 
     private void validateUserDto(UserDto userDto) throws ValidationException {
@@ -29,8 +36,7 @@ public class DefaultUserService implements UserService{
     }
 
     @Override
-    public UserDto saveUser(UserDto userDto) throws ValidationException {
-        validateUserDto(userDto);
+    public ResponseEntity<?> saveUser(UserDto userDto){
         User savedUser = User.builder()
                 .id(userDto.getId())
                 .email(userDto.getEmail())
@@ -40,12 +46,20 @@ public class DefaultUserService implements UserService{
 
                 userRepository.save(savedUser);
 
-        return userConverter.fromUserToUserDto(savedUser);
+        return ResponseEntity.ok(userConverter.fromUserToUserDto(savedUser));
+
     }
 
+    @Transactional
     @Override
     public void deleteUser(int userId) {
         userRepository.deleteById(userId);
+    }
+    // нЕ СРАботает удаление должен быть transactional
+
+
+    public void deleteUser(Long userId) {
+        userRepository.findById(userId.intValue()).ifPresent(userRepository::delete);
     }
 
     @Override
@@ -62,11 +76,20 @@ public class DefaultUserService implements UserService{
         List<User> users = userRepository.findAll();
         List<UserDto> usersDto = new ArrayList<>();
 
-        if (users != null) {
-            for (User u: users) {
-                usersDto.add(userConverter.fromUserToUserDto(u));
+        if (!users.isEmpty()) {
+            for (User user: users) {
+                usersDto.add(userConverter.fromUserToUserDto(user));
             }
         }
-        return userRepository.findAll();
+        return usersDto;
     }
+
+    // Получить всех user у которых в почтовом адресе. "передаваемый параметр *@gmail. и т.д.*, отсортиванный по id"
+
+    // EditUser
+    // EditUser
+    // AddUser
+    // DeleteUsers
+
+
 }

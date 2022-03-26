@@ -5,6 +5,7 @@ import kz.kaisar.springcrudapp02.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+@Component
 public class UserConverter {
 
     public User fromUserDtoToUser(UserDto userDto) {
